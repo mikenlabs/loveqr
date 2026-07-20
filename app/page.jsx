@@ -249,6 +249,7 @@ export default function CreatePage() {
         <HeartParticles count={10} />
         <div className="w-full max-w-sm animate-fade-in-up">
           <div className="text-center mb-8">
+            <img src="/logo.png" alt="LoveQR" className="w-16 h-16 mx-auto mb-3" />
             <h1 className="text-4xl font-heading text-gradient mb-1">LoveQR</h1>
             <p className="text-love-400 font-heading text-lg">Admin Panel</p>
           </div>
@@ -395,9 +396,12 @@ export default function CreatePage() {
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-heading text-gradient">LoveQR</h1>
-            <p className="text-love-400 font-heading text-base">Admin Dashboard</p>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="LoveQR" className="w-10 h-10" />
+            <div>
+              <h1 className="text-3xl font-heading text-gradient">LoveQR</h1>
+              <p className="text-love-400 font-heading text-sm">Admin Dashboard</p>
+            </div>
           </div>
           <button
             onClick={handleLogout}

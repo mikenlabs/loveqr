@@ -14,12 +14,18 @@ const quicksand = Quicksand({
 })
 
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: 'LoveQR - Secret Love Messages',
   description: 'Create encrypted love messages hidden in QR codes. Share your heart in a truly unique way.',
+  icons: {
+    icon: '/favicon.png',
+    apple: '/logo.png',
+  },
   openGraph: {
     title: 'LoveQR - Secret Love Messages',
     description: 'Create encrypted love messages hidden in QR codes.',
     type: 'website',
+    images: ['/logo.png'],
   },
 }
 
