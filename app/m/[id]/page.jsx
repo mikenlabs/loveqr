@@ -150,6 +150,28 @@ export default function ViewMessagePage() {
                     </p>
                   ))}
                 </div>
+
+                {messageData.songUrl && (
+                  <div className="mt-6 pt-4 border-t border-love-100 text-center animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                    <p className="text-xs text-love-300 mb-2">Our song</p>
+                    <a
+                      href={messageData.songUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-love-500 to-pink-500 text-white rounded-full shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 group"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                      </svg>
+                      <span className="text-sm font-semibold">
+                        {messageData.songTitle || 'Listen to our song'}
+                      </span>
+                      <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                      </svg>
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
 

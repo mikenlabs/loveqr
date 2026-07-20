@@ -5,7 +5,7 @@ import { getServiceSupabase } from '@/lib/supabase'
 
 export async function POST(request) {
   try {
-    const { imageUrl, message, password } = await request.json()
+    const { imageUrl, message, password, songUrl, songTitle } = await request.json()
 
     if (!imageUrl || !message || !password) {
       return NextResponse.json(
@@ -38,6 +38,8 @@ export async function POST(request) {
       image_url: imageUrl,
       message,
       password_hash: passwordHash,
+      song_url: songUrl || null,
+      song_title: songTitle || null,
       view_count: 0,
       created_at: new Date().toISOString(),
     })

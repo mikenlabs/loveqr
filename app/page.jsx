@@ -17,6 +17,8 @@ export default function CreatePage() {
   const [message, setMessage] = useState('')
   const [messagePassword, setMessagePassword] = useState('')
   const [showMessagePassword, setShowMessagePassword] = useState(false)
+  const [songUrl, setSongUrl] = useState('')
+  const [songTitle, setSongTitle] = useState('')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState('form')
   const [result, setResult] = useState(null)
@@ -94,6 +96,8 @@ export default function CreatePage() {
           imageUrl,
           message: message.trim(),
           password: messagePassword.trim(),
+          songUrl: songUrl.trim() || null,
+          songTitle: songTitle.trim() || null,
         }),
       })
 
@@ -421,6 +425,32 @@ export default function CreatePage() {
                 </button>
               </div>
               <p className="text-xs text-love-300 mt-2">Share this password with your recipient</p>
+            </div>
+
+            <div className="bg-gradient-card backdrop-blur-sm rounded-3xl shadow-xl border border-love-200/50 p-6">
+              <h2 className="text-xl font-heading text-love-700 mb-5 flex items-center gap-2">
+                <svg className="w-5 h-5 text-love-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553l-10.5 3M9 9l10.5-3M9 9l3.75 3.75M9 9l-3.75 3.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Song (Optional)
+              </h2>
+              <div className="space-y-3">
+                <input
+                  type="url"
+                  value={songUrl}
+                  onChange={(e) => setSongUrl(e.target.value)}
+                  placeholder="Spotify / YouTube / Apple Music link..."
+                  className="w-full px-4 py-3 rounded-xl border-2 border-love-200 bg-white/80 focus:border-love-400 focus:ring-2 focus:ring-love-200 outline-none transition-all text-love-900 placeholder:text-love-300"
+                />
+                <input
+                  type="text"
+                  value={songTitle}
+                  onChange={(e) => setSongTitle(e.target.value)}
+                  placeholder="Song title (e.g. Perfect - Ed Sheeran)"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-love-200 bg-white/80 focus:border-love-400 focus:ring-2 focus:ring-love-200 outline-none transition-all text-love-900 placeholder:text-love-300"
+                />
+              </div>
+              <p className="text-xs text-love-300 mt-2">Paste a link to your special song</p>
             </div>
 
             <div className="bg-gradient-card backdrop-blur-sm rounded-3xl shadow-xl border border-love-200/50 p-6">
