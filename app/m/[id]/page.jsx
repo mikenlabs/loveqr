@@ -126,7 +126,7 @@ export default function ViewMessagePage() {
               )}
 
               <div className="p-6 sm:p-8 letter-paper">
-                <div className="space-y-4">
+                <div className="space-y-4 text-center">
                   {lines.map((line, i) => (
                     <p
                       key={i}
