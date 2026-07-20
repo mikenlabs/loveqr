@@ -116,16 +116,25 @@ export default function ViewMessagePage() {
 
             <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-love-200 overflow-hidden animate-reveal">
               {messageData.imageUrl && (
-                <div className="border-b border-love-100">
-                  <img
-                    src={messageData.imageUrl}
-                    alt="Love message"
-                    className="w-full max-h-80 object-contain bg-love-50/30"
-                  />
+                <div className="flex justify-center pt-8 pb-4 bg-gradient-to-b from-love-50/50 to-transparent">
+                  <div className="relative">
+                    <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border-4 border-white shadow-xl ring-4 ring-love-200">
+                      <img
+                        src={messageData.imageUrl}
+                        alt="Love message"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-gradient-btn shadow-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              <div className="p-6 sm:p-8 letter-paper">
+              <div className="p-6 sm:p-8 pt-4 letter-paper">
                 <div className="space-y-4 text-center">
                   {lines.map((line, i) => (
                     <p
