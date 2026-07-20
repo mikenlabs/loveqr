@@ -25,6 +25,19 @@ export default function CreatePage() {
   const [error, setError] = useState('')
   const fileInputRef = useRef(null)
 
+  const [adminTab, setAdminTab] = useState('create')
+  const [messages, setMessages] = useState([])
+  const [messagesLoading, setMessagesLoading] = useState(false)
+  const [editingMessage, setEditingMessage] = useState(null)
+  const [editMsg, setEditMsg] = useState('')
+  const [editPw, setEditPw] = useState('')
+  const [editSongUrl, setEditSongUrl] = useState('')
+  const [editSongTitle, setEditSongTitle] = useState('')
+  const [editShowPw, setEditShowPw] = useState(false)
+  const [editSaving, setEditSaving] = useState(false)
+  const [editError, setEditError] = useState('')
+  const [editSuccess, setEditSuccess] = useState('')
+
   useEffect(() => {
     if (sessionStorage.getItem('loveqr_admin') === 'true') {
       setAdminLoggedIn(true)
@@ -143,15 +156,90 @@ export default function CreatePage() {
     }
   }
 
+  const fetchMessages = useCallback(async () => {
+    setMessagesLoading(true)
+    try {
+      const res = await fetch('/api/admin/messages', {
+        headers: { 'x-admin-password': ADMIN_PASSWORD },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(data)
+      }
+    } catch {} finally {
+      setMessagesLoading(false)
+    }
+  }, [])
+
+  const handleEdit = (msg) => {
+    setEditingMessage(msg)
+    setEditMsg(msg.message || '')
+    setEditPw('')
+    setEditSongUrl(msg.song_url || '')
+    setEditSongTitle(msg.song_title || '')
+    setEditError('')
+    setEditSuccess('')
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editMsg.trim()) {
+      setEditError('Message cannot be empty')
+      return
+    }
+    if (editPw && editPw.length < 4) {
+      setEditError('Password must be at least 4 characters')
+      return
+    }
+
+    setEditSaving(true)
+    setEditError('')
+    setEditSuccess('')
+
+    try {
+      const body = { message: editMsg.trim() }
+      if (editPw.trim()) body.password = editPw.trim()
+      body.songUrl = editSongUrl.trim() || null
+      body.songTitle = editSongTitle.trim() || null
+
+      const res = await fetch(`/api/admin/messages/${editingMessage.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': ADMIN_PASSWORD,
+        },
+        body: JSON.stringify(body),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Failed to update')
+      }
+
+      setEditSuccess('Message updated successfully!')
+      fetchMessages()
+      setTimeout(() => {
+        setEditingMessage(null)
+        setEditSuccess('')
+      }, 1200)
+    } catch (err) {
+      setEditError(err.message)
+    } finally {
+      setEditSaving(false)
+    }
+  }
+
   const handleLogout = () => {
     sessionStorage.removeItem('loveqr_admin')
     setAdminLoggedIn(false)
     setAdminPassword('')
     setStep('form')
+    setAdminTab('create')
     setImage(null)
     setPreview(null)
     setMessage('')
     setMessagePassword('')
+    setSongUrl('')
+    setSongTitle('')
     setResult(null)
   }
 
@@ -322,6 +410,36 @@ export default function CreatePage() {
           </button>
         </div>
 
+        <div className="flex gap-1 mb-6 bg-white/60 rounded-2xl p-1 border border-love-200 shadow-sm">
+          <button
+            onClick={() => setAdminTab('create')}
+            className={`flex-1 py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ${
+              adminTab === 'create'
+                ? 'bg-gradient-btn text-white shadow-md'
+                : 'text-love-500 hover:text-love-700 hover:bg-love-50'
+            }`}
+          >
+            <svg className="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Create
+          </button>
+          <button
+            onClick={() => { setAdminTab('manage'); fetchMessages() }}
+            className={`flex-1 py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 ${
+              adminTab === 'manage'
+                ? 'bg-gradient-btn text-white shadow-md'
+                : 'text-love-500 hover:text-love-700 hover:bg-love-50'
+            }`}
+          >
+            <svg className="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+            </svg>
+            Manage
+          </button>
+        </div>
+
+        {adminTab === 'create' ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-gradient-card backdrop-blur-sm rounded-3xl shadow-xl border border-love-200/50 p-6 sm:p-8">
@@ -490,7 +608,176 @@ export default function CreatePage() {
             </div>
           </div>
         </div>
+        ) : (
+
+        <div className="space-y-4">
+          {messagesLoading ? (
+            <div className="text-center py-12 text-love-400">
+              <svg className="w-8 h-8 mx-auto animate-spin mb-3" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Loading messages...
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-love-200 p-12 text-center">
+              <svg className="w-12 h-12 mx-auto text-love-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25-2.25M12 13.875V3" />
+              </svg>
+              <p className="text-love-500 font-medium">No messages yet</p>
+              <p className="text-love-300 text-sm mt-1">Create your first LoveQR message</p>
+            </div>
+          ) : (
+            messages.map((msg) => (
+              <div key={msg.id} className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-md border border-love-200 p-5 flex items-start gap-4 hover:shadow-lg transition-shadow">
+                <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-love-50 border border-love-100">
+                  <img src={msg.image_url} alt="" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-love-800 font-medium truncate">{msg.message}</p>
+                  <div className="flex items-center gap-3 mt-1 text-xs text-love-400">
+                    <span>{new Date(msg.created_at).toLocaleDateString()}</span>
+                    {msg.song_title && (
+                      <span className="flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                        {msg.song_title}
+                      </span>
+                    )}
+                    <span>{msg.view_count} views</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <a
+                    href={`/m/${msg.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-love-400 hover:text-love-600 hover:bg-love-50 rounded-lg transition-colors"
+                    title="Preview"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </a>
+                  <button
+                    onClick={() => handleEdit(msg)}
+                    className="p-2 text-love-400 hover:text-love-600 hover:bg-love-50 rounded-lg transition-colors"
+                    title="Edit"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        )}
       </div>
+
+      {editingMessage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm" onClick={() => !editSaving && setEditingMessage(null)}>
+          <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-love-200 p-6 sm:p-8 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-heading text-love-700">Edit Message</h2>
+              <button onClick={() => setEditingMessage(null)} className="p-1 text-love-400 hover:text-love-600 rounded-lg hover:bg-love-50 transition-colors">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-love-800 mb-1.5">Message</label>
+                <textarea
+                  value={editMsg}
+                  onChange={(e) => setEditMsg(e.target.value)}
+                  rows={5}
+                  maxLength={5000}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-love-200 bg-white/80 focus:border-love-400 focus:ring-2 focus:ring-love-200 outline-none transition-all resize-none text-love-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-love-800 mb-1.5">New Password <span className="text-love-300 font-normal">(leave blank to keep current)</span></label>
+                <div className="relative">
+                  <input
+                    type={editShowPw ? 'text' : 'password'}
+                    value={editPw}
+                    onChange={(e) => setEditPw(e.target.value)}
+                    placeholder="Enter new password..."
+                    className="w-full px-4 py-3 pr-12 rounded-xl border-2 border-love-200 bg-white/80 focus:border-love-400 focus:ring-2 focus:ring-love-200 outline-none transition-all text-love-900 placeholder:text-love-300"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditShowPw(!editShowPw)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-love-400 hover:text-love-600 transition-colors p-1"
+                    tabIndex={-1}
+                  >
+                    {editShowPw ? (
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-love-800 mb-1.5">Song Link <span className="text-love-300 font-normal">(optional)</span></label>
+                <input
+                  type="url"
+                  value={editSongUrl}
+                  onChange={(e) => setEditSongUrl(e.target.value)}
+                  placeholder="Spotify / YouTube / Apple Music..."
+                  className="w-full px-4 py-3 rounded-xl border-2 border-love-200 bg-white/80 focus:border-love-400 focus:ring-2 focus:ring-love-200 outline-none transition-all text-love-900 placeholder:text-love-300"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-love-800 mb-1.5">Song Title</label>
+                <input
+                  type="text"
+                  value={editSongTitle}
+                  onChange={(e) => setEditSongTitle(e.target.value)}
+                  placeholder="e.g. Perfect - Ed Sheeran"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-love-200 bg-white/80 focus:border-love-400 focus:ring-2 focus:ring-love-200 outline-none transition-all text-love-900 placeholder:text-love-300"
+                />
+              </div>
+
+              {editError && (
+                <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">{editError}</div>
+              )}
+              {editSuccess && (
+                <div className="bg-green-50 border border-green-200 text-green-600 rounded-xl px-4 py-3 text-sm">{editSuccess}</div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setEditingMessage(null)}
+                  className="flex-1 py-3 px-4 rounded-xl border-2 border-love-200 text-love-600 font-semibold hover:bg-love-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={editSaving}
+                  className="flex-1 py-3 px-4 bg-gradient-btn text-white rounded-xl font-semibold shadow-md hover:shadow-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {editSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
