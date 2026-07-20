@@ -80,6 +80,8 @@ export async function POST(request, { params }) {
       id: data.id,
       imageUrl: data.image_url,
       message: data.message,
+      songUrl: data.song_url,
+      songTitle: data.song_title,
       viewCount: data.view_count + 1,
       createdAt: data.created_at,
     })
