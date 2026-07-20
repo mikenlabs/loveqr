@@ -4,8 +4,6 @@ CREATE TABLE IF NOT EXISTS messages (
   image_url TEXT NOT NULL,
   message TEXT NOT NULL,
   password_hash TEXT NOT NULL,
-  song_url TEXT,
-  song_title TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   view_count INTEGER NOT NULL DEFAULT 0
 );
