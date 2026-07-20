@@ -54,3 +54,47 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export async function DELETE(request, { params }) {
+  try {
+    const adminPw = request.headers.get('x-admin-password')
+    if (adminPw !== ADMIN_PASSWORD) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id } = params
+    const supabase = getServiceSupabase()
+
+    const { data: msg, error: fetchError } = await supabase
+      .from('messages')
+      .select('image_url')
+      .eq('id', id)
+      .single()
+
+    if (fetchError || !msg) {
+      return NextResponse.json({ error: 'Message not found' }, { status: 404 })
+    }
+
+    const { error: deleteError } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', id)
+
+    if (deleteError) {
+      console.error('Admin delete error:', deleteError)
+      return NextResponse.json({ error: 'Failed to delete' }, { status: 500 })
+    }
+
+    if (msg.image_url) {
+      const fileName = msg.image_url.split('/').pop()
+      if (fileName) {
+        await supabase.storage.from('loveqr-images').remove([fileName]).catch(() => {})
+      }
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Admin delete error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
