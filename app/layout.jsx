@@ -1,6 +1,9 @@
 import { Caveat, Quicksand } from 'next/font/google'
 import './globals.css'
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+const baseUrl = siteUrl && siteUrl.startsWith('http') ? siteUrl : 'https://loveqr.vercel.app'
+
 const caveat = Caveat({
   subsets: ['latin'],
   variable: '--font-caveat',
@@ -14,7 +17,7 @@ const quicksand = Quicksand({
 })
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(baseUrl),
   title: 'LoveQR - Secret Love Messages',
   description: 'Create encrypted love messages hidden in QR codes. Share your heart in a truly unique way.',
   icons: {
