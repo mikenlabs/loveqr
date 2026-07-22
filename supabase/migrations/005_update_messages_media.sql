@@ -1,0 +1,11 @@
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE SET NULL;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS tokens_spent INTEGER DEFAULT 0;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS media_url TEXT;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS media_title TEXT;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS media_type TEXT;
+
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own messages"
+  ON messages FOR SELECT
+  USING (auth.uid() = user_id);
